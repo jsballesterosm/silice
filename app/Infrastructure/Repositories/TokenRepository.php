@@ -14,6 +14,14 @@ class TokenRepository
         $this->db = Connection::make();
     }
 
+    /**
+     * Crea un nuevo token para un usuario.
+     * 
+     * @param int $userId ID del usuario.
+     * @param string $token Token generado.
+     * @param int $ttlSeconds Tiempo de vida del token en segundos.
+     * @return void
+     */
     public function create(int $userId, string $token, int $ttlSeconds): void
     {
         $expires = (new DateTime())
@@ -32,6 +40,12 @@ class TokenRepository
         ]);
     }
 
+    /**
+     * Busca un token válido y devuelve el usuario asociado.
+     * 
+     * @param string $token Token a buscar.
+     * @return array|null Datos del usuario si el token es válido, null en caso contrario
+     */
     public function findValid(string $token): ?array
     {
         $stmt = $this->db->prepare("
@@ -49,5 +63,26 @@ class TokenRepository
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $user ?: null;
+    }
+
+    /**
+     * Busca un usuario por su token.
+     * 
+     * @param string $token Token a buscar.
+     * @return array|null Datos del usuario si se encuentra, null en caso contrario.
+     */
+    public function getUserByToken(string $token): array|null
+    {
+        $stmt = $this->db->prepare(
+            'SELECT u.* FROM usuarios u
+            JOIN usuarios_tokens t ON u.id = t.user_id
+            WHERE t.token_hash = :token_hash
+            LIMIT 1'
+        );
+
+        $stmt->execute([':token_hash' => hash('sha256', $token)]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $result === false ? null : $result;
     }
 }

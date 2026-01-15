@@ -93,6 +93,12 @@ class UserValidator
         return $errors;
     }
 
+    /**
+     * Valida los datos para la actualización de un usuario.
+     * 
+     * @param array|null $data Datos del usuario a validar.
+     * @param int $userId ID del usuario que se está actualizando.
+     */
     public static function validateUpdate(array|null $data, int $userId): array
     {
         if ($data === null) {
@@ -100,6 +106,8 @@ class UserValidator
         }
 
         $errors = [];
+
+        $userRepo = new UserRepository();
 
         // nombre y apellidos
         if (empty($data['nombreApellidos'])) {
@@ -115,6 +123,11 @@ class UserValidator
             $errors['correo'] = 'Correo inválido';
         }
 
+        // validamos que el correo no exista ya en la base de datos
+        if (isset($data['correo']) && $userRepo->existsEmailByDiffId($data['correo'], $userId)) {
+            $errors['correo'] = 'El correo ya está registrado';
+        }
+
         // tipo
         if (empty($data['tipo_id']) || !is_numeric($data['tipo_id'])) {
             $errors['tipo_id'] = 'Tipo inválido';
@@ -124,6 +137,22 @@ class UserValidator
         $userRepo = new UserRepository();
         if (isset($data['tipo_id']) && !$userRepo->existsTipoId((int)$data['tipo_id'])) {
             $errors['tipo_id'] = 'Tipo no existe';
+        }
+
+        // nif validacion
+        if (!empty($data['nif'])) {
+            try {
+                if (!NifValidator::validate($data['nif'])) {
+                    $errors['nif'] = 'NIF inválido';
+                }
+            } catch (\InvalidArgumentException $e) {
+                $errors['nif'] = 'NIF formato inválido';
+            }
+        }
+
+        // validamos que el nif no exista ya en la base de datos
+        if (!empty($data['nif']) && $userRepo->existsNifByDiffId($data['nif'], $userId)) {
+            $errors['nif'] = 'El NIF ya está registrado';
         }
 
         return $errors;

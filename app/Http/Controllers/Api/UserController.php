@@ -67,7 +67,7 @@ class UserController
     }
 
     /**
-     * Handle user update request
+     * Manejamos la petición de actualización de un usuario
      * 
      * @return void
      */
@@ -84,11 +84,14 @@ class UserController
 
         $body = json_decode(file_get_contents('php://input'), true) ?? [];
 
-        try {
-            UserValidator::validateUpdate($body, $id);
-        } catch (InvalidArgumentException $e) {
+        $errors = UserValidator::validateUpdate($body, $id);
+
+        // procedemos a pintar los errores si los hay
+        if (!empty($errors)) {
             http_response_code(400);
-            echo json_encode(['error' => $e->getMessage()]);
+            echo json_encode([
+                'errors' => $errors
+            ]);
             return;
         }
 
@@ -106,7 +109,7 @@ class UserController
     }
 
     /**
-     * Handle user deletion request
+     * Manejamos la petición de eliminación de un usuario
      * 
      * @return void
      * 
@@ -130,6 +133,22 @@ class UserController
             return;
         }
 
+        // aqui hacemos una validacion para que se pueda eliminar el usuario que esta realizando
+        // la peticion.
+        $token = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+        $token = str_replace('Token ', '', $token);
+
+        $actualUserId = TokenService::getUserIdFromToken($token);
+
+        if ($actualUserId == $id) {
+            http_response_code(403);
+            echo json_encode(['error' => 'No autorizado para eliminar este usuario']);
+            return;
+        }
+
+        // si todo anda bien procedemos a eliminar el usuario
+        // primero eliminamos los tokens asociados al usuario
+        $repo->deleteTokenByUserId($id);
         $repo->deleteUserById($id);
 
         echo json_encode(['message' => 'Usuario eliminado']);

@@ -76,6 +76,42 @@ class UserRepository
     }
 
     /**
+     * Verifica si un usuario con el correo dado ya existe, excluyendo un ID específico.
+     * 
+     * @param string $correo Correo electrónico a verificar.
+     * @param int $id ID del usuario a excluir de la verificación.
+     * @return bool Verdadero si el correo existe, falso en caso contrario.
+     */
+    public function existsEmailByDiffId(string $correo, int $id): bool
+    {
+        $stmt = $this->db->prepare(
+            'SELECT 1 FROM usuarios WHERE correo = :correo AND id != :id LIMIT 1'
+        );
+
+        $stmt->execute([':correo' => $correo, ':id' => $id]);
+
+        return (bool)$stmt->fetchColumn();
+    }
+
+    /**
+     * Verifica si un usuario con el NIF dado ya existe, excluyendo un ID específico.
+     * 
+     * @param string $nif NIF a verificar.
+     * @param int $id ID del usuario a excluir de la verificación.
+     * @return bool Verdadero si el NIF existe, falso en caso contrario.
+     */
+    public function existsNifByDiffId(string $nif, int $id): bool
+    {
+        $stmt = $this->db->prepare(
+            'SELECT 1 FROM usuarios WHERE nif = :nif AND id != :id LIMIT 1'
+        );
+
+        $stmt->execute([':nif' => $nif, ':id' => $id]);
+
+        return (bool)$stmt->fetchColumn();
+    }
+
+    /**
      * Verifica si un tipo de usuario con el ID dado existe.
      * 
      * @param int $tipo_id ID del tipo de usuario a verificar.
@@ -212,12 +248,44 @@ class UserRepository
         return (bool)$stmt->fetchColumn();
     }
 
+    /**
+     * Actualiza los datos de un usuario.
+     * 
+     * @param int $id ID del usuario a actualizar.
+     * @param array $data Datos a actualizar.
+     * @return void
+     */
     public function update(int $id, array $data): void
     {
         $fields = [];
         $params = [':id' => $id];
-        
-        $sql = 'UPDATE usuarios SET ' . implode(', ', $data) . ' WHERE id = :id';
+
+        // Construir la consulta dinámicamente según los campos proporcionados
+        if (isset($data['nombreApellidos'])) {
+            $fields[] = 'nombre_apellidos = :nombreApellidos'; 
+            $params['nombreApellidos'] = $data['nombreApellidos'];
+        }
+
+        if (isset($data['correo'])) {
+            $fields[] = 'correo = :correo'; 
+            $params['correo'] = $data['correo'];
+        }
+
+        if (isset($data['nif'])) { 
+            $fields[] = 'nif = :nif'; 
+            $params['nif'] = $data['nif']; 
+        }
+
+        if (isset($data['tipo_id'])) { 
+            $fields[] = 'tipo_id = :tipo_id'; 
+            $params['tipo_id'] = $data['tipo_id']; 
+        }
+
+        if (!$fields) { 
+            return; 
+        }
+
+        $sql = 'UPDATE usuarios SET ' . implode(', ', $fields) . ' WHERE id = :id';
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
     }

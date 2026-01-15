@@ -35,7 +35,7 @@ class LoginController
         if($password == '' && !$dbUser) {
             $error_validador = true;
             
-        } elseif(!$dbUser || !password_verify($password, $dbUser['password']) && $password != '') {
+        } elseif($password != '' && (!$dbUser || !password_verify($password, $dbUser['password'] ?? ''))) {
             $error_validador = true;
         }
 
