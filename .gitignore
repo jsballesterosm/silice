@@ -1,0 +1,24 @@
+# Composer
+/vendor/
+
+# Environment files
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+
+# PHPUnit
+.phpunit.result.cache
+
+# Apache
+.htaccess
+
+# Runtime
+*.log
