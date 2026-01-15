@@ -3,30 +3,84 @@
 namespace App\Common;
 
 use FastRoute\RouteCollector;
+use FastRoute\Dispatcher;
 use function FastRoute\simpleDispatcher;
+use App\Http\Middleware\AuthMiddleware;
 
 class Router
 {
     public function dispatch(): void
     {
         $dispatcher = simpleDispatcher(function (RouteCollector $r) {
-            //$r->addRoute('GET', '/', 'App\Http\Controllers\Web\HomeController@index');
-            $r->addRoute('GET', '/api/users', 'App\Http\Controllers\Api\UserController@index');
-            $r->addRoute('GET', '/api/users/show', 'App\Http\Controllers\Api\UserController@show');
+
+            // Rutas públicas
+            $r->addRoute('GET', '/version', [
+                'uses' => 'App\Http\Controllers\Api\SystemController@version',
+                'auth' => false
+            ]);
+
+            $r->addRoute('GET', '/health', [
+                'uses' => 'App\Http\Controllers\Api\SystemController@health',
+                'auth' => false
+            ]);
+
+            // Rutas protegidas
+
+            // login
+            $r->addRoute('POST', '/api/auth/login', [
+                'uses' => 'App\Http\Controllers\Api\LoginController@login',
+                'auth' => false
+            ]);
+
+            // usuarios
+            $r->addRoute('POST', '/api/users/create', [
+                'uses' => 'App\Http\Controllers\Api\UserController@create',
+                'auth' => true
+            ]);
+            $r->addRoute('PUT', '/api/users/update/{id:\d+}', [
+                'uses' => 'App\Http\Controllers\Api\UserController@update',
+                'auth' => true
+            ]);
+            $r->addRoute('DELETE', '/api/users/delete/{id:\d+}', [
+                'uses' => 'App\Http\Controllers\Api\UserController@delete',
+                'auth' => true
+            ]);
         });
 
         $httpMethod = $_SERVER['REQUEST_METHOD'];
-        $uri = strtok($_SERVER['REQUEST_URI'], '?');
+
+        // 🔧 Normalización clásica de URI
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $uri = str_replace('/public', '', $uri);
 
         $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
 
-        if ($routeInfo[0] !== \FastRoute\Dispatcher::FOUND) {
-            http_response_code(404);
-            echo 'Not Found';
-            return;
+        switch ($routeInfo[0]) {
+            case Dispatcher::NOT_FOUND:
+                header('Content-Type: application/json');
+                http_response_code(404);
+                echo json_encode(['error' => 'Not Found']);
+                return;
+
+            case Dispatcher::METHOD_NOT_ALLOWED:
+                header('Content-Type: application/json');
+                http_response_code(405);
+                echo json_encode(['error' => 'Method Not Allowed']);
+                return;
+
+            case Dispatcher::FOUND:
+                break;
         }
 
-        [$class, $method] = explode('@', $routeInfo[1]);
-        (new $class())->$method();
+        $handler = $routeInfo[1];
+        $params  = $routeInfo[2] ?? [];
+
+        // Middleware de autenticación
+        if (!empty($handler['auth'])) {
+            $GLOBALS['auth_user'] = AuthMiddleware::authenticate();
+        }
+
+        [$class, $method] = explode('@', $handler['uses']);
+        (new $class())->$method($params);
     }
 }
