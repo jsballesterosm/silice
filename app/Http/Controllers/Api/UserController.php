@@ -153,4 +153,112 @@ class UserController
 
         echo json_encode(['message' => 'Usuario eliminado']);
     }
+
+    public function list(): void
+    {
+        header('Content-Type: application/json');
+
+        $repo = new UserRepository();
+        $users = $repo->getAllUsers();
+
+        echo json_encode($users);
+    }
+
+    public function show(array $args): void
+    {
+        header('Content-Type: application/json');
+
+        $id = (int) ($args['id'] ?? 0);
+        if ($id <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'ID inválido']);
+            return;
+        }
+
+        $repo = new UserRepository();
+        $user = $repo->findById($id);
+
+        if ($user === null) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Usuario no encontrado']);
+            return;
+        }
+
+        echo json_encode($user);
+    }
+
+    /**
+     * Maneja la petición para obtener los tipos de usuario.
+     * 
+     * @return void
+     */
+    public function types(): void
+    {
+        header('Content-Type: application/json');
+
+        $repo = new UserRepository();
+        $types = $repo->getUserTypes();
+
+        echo json_encode($types);
+    }
+
+    public function password(array $args): void
+    {
+        header('Content-Type: application/json');
+
+        $id = (int) ($args['id'] ?? 0);
+        if ($id <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'ID inválido']);
+            return;
+        }
+
+        $body = json_decode(file_get_contents('php://input'), true) ?? [];
+
+        $user = $body['user'] ?? null;
+        $password = $body['admin_password'] ?? '';
+        $new_password = $body['new_password'] ?? '';
+
+        $errors = UserValidator::validatePasswordChange($body);
+
+        // procedemos a pintar los errores si los hay
+        if (!empty($errors)) {
+            http_response_code(400);
+            echo json_encode([
+                'errors' => $errors
+            ]);
+            return;
+        }
+
+        $repo = new UserRepository();
+
+        if (!$repo->exists($id)) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Usuario no existe']);
+            return;
+        }
+
+        // validamos las credenciales del administrador
+        $dbUser = $repo->findByUser($user);
+        $error_validador = false;
+        // el ejercicio dice que el password puede ser vacio
+        if(!$dbUser || !password_verify($password, $dbUser['password'] ?? '')) {
+            $error_validador = true;
+        }
+
+        if ($error_validador) {
+            http_response_code(401);
+            echo json_encode(['errors' => ['admin_password' => 'Credenciales de administrador inválidas']]);
+            return;
+        }
+
+        $passwordHash = null;
+        if (!empty($new_password)) {
+            $passwordHash = password_hash($new_password, PASSWORD_BCRYPT);
+        }
+
+        $repo->updatePassword($id, $passwordHash);
+
+        echo json_encode(['message' => 'Contraseña actualizada']);
+    }
 }

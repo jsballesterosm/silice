@@ -65,7 +65,9 @@ class UserValidator
         }
 
         // password
-        if (!empty($data['password']) && strlen($data['password']) < 6) {
+        if (empty($data['password'])) {
+            $errors['password'] = 'Contraseña obligatoria';
+        } elseif (strlen($data['password']) < 6) {
             $errors['password'] = 'Contraseña mínimo 6 caracteres';
         }
 
@@ -153,6 +155,47 @@ class UserValidator
         // validamos que el nif no exista ya en la base de datos
         if (!empty($data['nif']) && $userRepo->existsNifByDiffId($data['nif'], $userId)) {
             $errors['nif'] = 'El NIF ya está registrado';
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Valida los datos para el cambio de contraseña de un usuario.
+     * 
+     * @param array|null $data Datos del cambio de contraseña.
+     * @return array Array asociativo con los errores encontrados.
+     */
+    public static function validatePasswordChange(array|null $data): array
+    {
+        if ($data === null) {
+            return ['body' => 'Cuerpo de la solicitud inválido'];
+        }
+
+        $errors = [];
+        if (empty($data['user'])) {
+            $errors['user'] = 'Usuario obligatorio';
+        } 
+        
+        
+        if (empty($data['admin_password'])) {
+            $errors['admin_password'] = 'Contraseña de Admin obligatoria';
+        } elseif (strlen($data['admin_password']) < 6) {
+            $errors['admin_password'] = 'Contraseña de Admin mínimo 6 caracteres';
+        }
+
+        // password
+        if (empty($data['new_password'])) {
+            $errors['new_password'] = 'Contraseña obligatoria';
+        } elseif (strlen($data['new_password']) < 6) {
+            $errors['new_password'] = 'Contraseña mínimo 6 caracteres';
+        }
+
+        // repetir password
+        if (empty($data['repetir_password'])) {
+            $errors['repetir_password'] = 'Repetir contraseña obligatorio';
+        } elseif ($data['new_password'] !== $data['repetir_password']) {
+            $errors['repetir_password'] = 'Las contraseñas no coinciden';
         }
 
         return $errors;

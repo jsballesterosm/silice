@@ -222,7 +222,7 @@ class UserRepository
     public function findById(int $id): array|null
     {
         $stmt = $this->db->prepare(
-            'SELECT * FROM usuarios WHERE id = :id LIMIT 1'
+            'SELECT u.*, t.nombre as tipo FROM usuarios u JOIN tipos t ON u.tipo_id = t.id WHERE u.id = :id LIMIT 1'
         );
 
         $stmt->execute([':id' => $id]);
@@ -288,5 +288,53 @@ class UserRepository
         $sql = 'UPDATE usuarios SET ' . implode(', ', $fields) . ' WHERE id = :id';
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
+    }
+
+    public function getAllUsers(): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT u.*, t.nombre as tipo FROM usuarios u JOIN tipos t ON u.tipo_id = t.id ORDER BY u.id DESC'
+        );
+
+        $stmt->execute();
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $results;
+    }
+
+    /**
+     * Obtiene todos los tipos de usuario.
+     * 
+     * @return array Lista de tipos de usuario.
+     */
+    public function getUserTypes(): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id, nombre FROM tipos ORDER BY id ASC'
+        );
+
+        $stmt->execute();
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $results;
+    }
+
+    /**
+     * Actualiza la contraseña de un usuario.
+     * 
+     * @param int $id ID del usuario.
+     * @param string $hashedPassword Nueva contraseña hasheada.
+     * @return void
+     */
+    public function updatePassword(int $id, string|null $hashedPassword): void
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE usuarios SET password = :password WHERE id = :id'
+        );
+
+        $stmt->execute([
+            ':password' => $hashedPassword,
+            ':id' => $id
+        ]);
     }
 }

@@ -25,6 +25,16 @@ class Router
             ]);
 
             // Rutas protegidas
+            $r->addRoute('GET', '/', [
+                'uses' => 'App\Http\Controllers\Web\HomeController@index',
+                'auth' => false
+            ]);
+
+            // vista login
+            $r->addRoute('GET', '/auth/login', [
+                'uses' => 'App\Http\Controllers\Web\LoginController@index',
+                'auth' => false
+            ]);
 
             // login
             $r->addRoute('POST', '/api/auth/login', [
@@ -43,6 +53,22 @@ class Router
             ]);
             $r->addRoute('DELETE', '/api/users/delete/{id:\d+}', [
                 'uses' => 'App\Http\Controllers\Api\UserController@delete',
+                'auth' => true
+            ]);
+            $r->addRoute('GET', '/api/users/list', [
+                'uses' => 'App\Http\Controllers\Api\UserController@list',
+                'auth' => true
+            ]);
+            $r->addRoute('GET', '/api/users/show/{id:\d+}', [
+                'uses' => 'App\Http\Controllers\Api\UserController@show',
+                'auth' => true
+            ]);
+            $r->addRoute('GET', '/api/users/types', [
+                'uses' => 'App\Http\Controllers\Api\UserController@types',
+                'auth' => true
+            ]);
+            $r->addRoute('PATCH', '/api/users/password/{id:\d+}', [
+                'uses' => 'App\Http\Controllers\Api\UserController@password',
                 'auth' => true
             ]);
         });

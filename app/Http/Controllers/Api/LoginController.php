@@ -8,7 +8,7 @@ class LoginController
 {   
 
     /**
-     * Handle user login request
+     * Manejamos la petición de login
      * 
      */
     public function login()

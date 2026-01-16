@@ -1,0 +1,35 @@
+{% extends 'layouts/base.twig' %}
+
+{% block stylesheets %}
+    <style>
+        .container {
+            width: auto;
+            max-width: 680px;
+            padding: 0 15px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <main class="form-signin w-100 m-auto"> 
+        <div class="container-fluid col-lg-3"> 
+            <h1 class="mt-5">Iniciar Sesion</h1> 
+            <form id="form-login">
+                <div class="mb-3">
+                    <label for="usuario" class="form-label">Usuario <i class="text-danger">*</i></label>
+                    <input type="user" class="form-control" id="user" placeholder="ingrese el usuario">
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Contraseña <i class="text-danger">*</i></label>
+                    <input type="password" class="form-control" id="password" placeholder="ingrese la contraseña">
+                </div>
+                <div id="error" class="text-danger mb-2"></div>
+                <button type="button" id="loginBtn" class="btn btn-primary">Iniciar Sesion</button>
+            </form>
+        </div> 
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="/assets/auth.js"></script>
+{% endblock %}
