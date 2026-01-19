@@ -40,6 +40,7 @@ class LoginController
             $error_validador = false;
         }
 
+
         if ($error_validador) {
             http_response_code(401);
             echo json_encode(['acceso' => 'Acceso Fallido']);
