@@ -65,9 +65,7 @@ class UserValidator
         }
 
         // password
-        if (empty($data['password'])) {
-            $errors['password'] = 'Contraseña obligatoria';
-        } elseif (strlen($data['password']) < 6) {
+        if (!empty($data['password']) && strlen($data['password']) < 6) {
             $errors['password'] = 'Contraseña mínimo 6 caracteres';
         }
 
@@ -175,13 +173,6 @@ class UserValidator
         $errors = [];
         if (empty($data['user'])) {
             $errors['user'] = 'Usuario obligatorio';
-        } 
-        
-        
-        if (empty($data['admin_password'])) {
-            $errors['admin_password'] = 'Contraseña de Admin obligatoria';
-        } elseif (strlen($data['admin_password']) < 6) {
-            $errors['admin_password'] = 'Contraseña de Admin mínimo 6 caracteres';
         }
 
         // password

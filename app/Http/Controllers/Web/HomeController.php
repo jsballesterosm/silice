@@ -14,7 +14,8 @@ class HomeController
         $twig = new Environment($loader);
 
         echo $twig->render('home.twig', [
-            'title' => 'Inicio'
+            'title' => 'Inicio',
+            'base_url' => $_ENV['BASE_URL'] 
         ]);
     }
 }

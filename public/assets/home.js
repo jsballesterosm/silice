@@ -8,7 +8,7 @@ const bsModal = new bootstrap.Modal(modalElement);
 const modalCrear = new bootstrap.Modal(document.getElementById('modalCrearUsuario'));
 const modalPass = new bootstrap.Modal(document.getElementById('modalPassword'));
 
-if (!token) window.location.href = "/auth/login";
+if (!token) window.location.href = `${BASE_URL}/auth/login`;
 
 document.addEventListener("DOMContentLoaded", function() {
     const localName = localStorage.getItem('nombre_apellidos');
@@ -34,7 +34,7 @@ document.querySelectorAll(".cerrar-sesion").forEach(boton => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         localStorage.removeItem("nombre_apellidos");
-        window.location.href = "/auth/login";
+        window.location.href = `${BASE_URL}/auth/login`;
     });
 });
 
@@ -54,7 +54,7 @@ tableBody.addEventListener("click", (event) => {
 
         if (confirmar) {
             // consumimos el api para eliminar el usuario
-            fetch("/api/users/delete/" + userId, {
+            fetch(`${BASE_URL}/api/users/delete/` + userId, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -99,7 +99,7 @@ document.getElementById('table-body').addEventListener("click", async (event) =>
 
 async function cargarDatosEnModal(id) {
     try {
-        const response = await fetch(`/api/users/show/${id}`, {
+        const response = await fetch(`${BASE_URL}/api/users/show/${id}`, {
             headers: { 'Authorization': `Token ${localStorage.getItem('token')}` }
         });
         const user = await response.json();
@@ -135,7 +135,7 @@ async function guardarCambios() {
     };
 
     try {
-        const response = await fetch(`/api/users/update/${id}`, {
+        const response = await fetch(`${BASE_URL}/api/users/update/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -196,7 +196,7 @@ async function enviarNuevoUsuario() {
     };
 
     try {
-        const response = await fetch('/api/users/create', {
+        const response = await fetch(`${BASE_URL}/api/users/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -240,7 +240,7 @@ async function enviarNuevoUsuario() {
 
 async function cargarTiposIdentificacion() {
     const select = document.getElementById('tipo_id');
-    const API_TIPOS_URL = '/api/users/types';
+    const API_TIPOS_URL = `${BASE_URL}/api/users/types`;
 
     try {
         const response = await fetch(API_TIPOS_URL, {
@@ -268,7 +268,7 @@ async function cargarTiposIdentificacion() {
 
 async function cargarTipos() {
     const select = document.getElementById('create_tipo_id');
-    const API_TIPOS_URL = '/api/users/types';
+    const API_TIPOS_URL = `${BASE_URL}/api/users/types`;
 
     try {
         const response = await fetch(API_TIPOS_URL, {
@@ -332,7 +332,7 @@ async function ejecutarCambioPassword() {
     };
 
     try {
-        const response = await fetch(`/api/users/password/${userId}`, {
+        const response = await fetch(`${BASE_URL}/api/users/password/${userId}`, {
             method: 'PATCH', // O POST según tu API
             headers: {
                 'Content-Type': 'application/json',

@@ -266,7 +266,10 @@
 {% endblock %}
 
 {% block javascripts %}
-    <script src="/assets/home.js"></script>
+    <script>
+        const BASE_URL = "{{base_url}}";
+    </script>
+    <script src="{{base_url}}/assets/home.js"></script>
     <script>
     let currentPage = 1;
 
@@ -278,7 +281,7 @@
         const tableBody = document.getElementById('table-body');
         const pagination = document.getElementById('pagination-controls');
         
-        const API_URL = `/api/users/list`;
+        const API_URL = `{{base_url}}/api/users/list`;
 
         try {
             const response = await fetch(API_URL, {

@@ -31,5 +31,8 @@
 {% endblock %}
 
 {% block javascripts %}
-    <script src="/assets/auth.js"></script>
+    <script>
+        const BASE_URL = "{{base_url}}";
+    </script>
+    <script src="{{base_url}}/assets/auth.js"></script>
 {% endblock %}

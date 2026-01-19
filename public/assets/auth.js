@@ -3,7 +3,7 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
     const password = document.getElementById("password").value;
 
     try {
-        const res = await fetch(`/api/auth/login`, {
+        const res = await fetch(`${BASE_URL}/api/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ user, password })
@@ -18,7 +18,7 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", data.user);
         localStorage.setItem("nombre_apellidos", data.nombre_apellidos);
-        window.location.href = "/";
+        window.location.href = `${BASE_URL}/`;
     } catch (err) {
         document.getElementById("error").innerText = err.message;
     }

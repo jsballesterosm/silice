@@ -14,7 +14,8 @@ class LoginController
         $twig = new Environment($loader);
 
         echo $twig->render('login.twig', [
-            'title' => 'Inicio'
+            'title' => 'Inicio',
+            'base_url' => $_ENV['BASE_URL']
         ]);
     }
 }

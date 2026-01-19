@@ -240,10 +240,15 @@ class UserController
 
         // validamos las credenciales del administrador
         $dbUser = $repo->findByUser($user);
-        $error_validador = false;
+        $error_validador = true;
         // el ejercicio dice que el password puede ser vacio
-        if(!$dbUser || !password_verify($password, $dbUser['password'] ?? '')) {
-            $error_validador = true;
+        // si existe el usuario pero la contraseña almacenada es null
+        if ($dbUser && $dbUser['password'] === null && $password === '') {
+            $error_validador = false;
+        }
+        // si existe el usuario y la contraseña almacenada no es null y es valida
+        elseif ($dbUser && password_verify($password, $dbUser['password'] ?? '')) {
+            $error_validador = false;
         }
 
         if ($error_validador) {
